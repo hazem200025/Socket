@@ -1,16 +1,18 @@
-const express =require ("express")
-const http=require("http")
-const app=express()
-const server=http.createServer(app)
-const socket=require("socket.io")
+const express = require("express");
+const http = require("http");
+const app = express();
+const server = http.createServer(app);
+const socket = require("socket.io");
 
-const io = require("socket.io")(8900, {
+const PORT = process.env.PORT || 5000; // Use the port defined in the environment or fallback to 5000
+
+const io = socket(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000", // Update this with your client's domain
   },
 });
 
-server.listen(5000,()=>console.log("SERVER IS runing enjoy voice call and video call"))
+server.listen(PORT, () => console.log(`SERVER IS running on port ${PORT}`));
 
 let users = [];
 
@@ -29,15 +31,19 @@ const getUser = (userId) => {
 
 io.on("connection", (socket) => {
   // code added by me
-  socket.emit("me",socket.id)
-  socket.on("disconnect",()=>{
-    socket.broadcast.emit("callEnded")
-  })
+  socket.emit("me", socket.id);
+  socket.on("disconnect", () => {
+    socket.broadcast.emit("callEnded");
+  });
 
-  socket.on("callUser",(data)=>{
-    io.to(data.userToCall).emit("callUser",{signal:data.signalData,from:data.from, name:data.name})
-  })
-  //when ceonnect
+  socket.on("callUser", (data) => {
+    io.to(data.userToCall).emit("callUser", {
+      signal: data.signalData,
+      from: data.from,
+      name: data.name,
+    });
+  });
+  //when connect
   console.log("a user connected.");
 
   //take userId and socketId from user
